@@ -1,0 +1,509 @@
+/* ---------- Portfolio mode bar (bottom-left, always visible) ---------- */
+.switcher {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 300;
+  display: flex;
+  align-items: stretch;
+  max-width: calc(100vw - 32px);
+  border: 3px solid var(--outline);
+  background: var(--bg-alt);
+  box-shadow: 4px 4px 0 var(--outline);
+  font-family: var(--font-body);
+}
+
+.switcher.is-hinting {
+  animation: switcher-glow 0.6s steps(2) infinite;
+}
+
+@keyframes switcher-glow {
+  50% {
+    box-shadow: 4px 4px 0 var(--accent-2);
+    border-color: var(--accent-2);
+  }
+}
+
+.switcher__label {
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+  background: var(--outline);
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+}
+
+.switcher__option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 0;
+  border-left: 3px solid var(--outline);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.switcher__option:first-of-type {
+  border-left: 0;
+}
+
+.switcher__option:hover,
+.switcher__option:focus-visible {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.switcher__option.is-active {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.switcher__icon {
+  font-size: 0.9rem;
+}
+
+.switcher__hint {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 14px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 6px 10px 6px 14px;
+  border: 3px solid var(--outline);
+  background: var(--text);
+  color: var(--accent-ink);
+  font-size: 1.2rem;
+  white-space: nowrap;
+  box-shadow: 4px 4px 0 var(--outline);
+  animation: switcher-in 0.2s steps(3);
+}
+
+/* speech-bubble tail pointing at the bar */
+.switcher__hint::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 100%;
+  width: 10px;
+  height: 10px;
+  margin-top: -2px;
+  background: var(--text);
+  border-right: 3px solid var(--outline);
+  border-bottom: 3px solid var(--outline);
+  transform: rotate(45deg);
+}
+
+.switcher__hint button {
+  padding: 0 6px;
+  border: 2px solid var(--outline);
+  background: transparent;
+  color: var(--accent-ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+@keyframes switcher-in {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+}
+
+/* keep the classic "DEBUG BUILD" badge clear of the bar */
+html.debug body::after {
+  bottom: 70px;
+}
+
+@media (max-width: 520px) {
+  .switcher__label {
+    display: none;
+  }
+
+  .switcher__option {
+    padding: 5px 9px;
+    font-size: 1.05rem;
+  }
+}
+
+/* ---------- Mode select screen (first visit) ---------- */
+.mode-select {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 20px;
+  min-height: 100svh;
+  padding: 32px max(16px, 5vw) 48px;
+  text-align: center;
+}
+
+.mode-select__intro {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.mode-select__avatar {
+  width: 64px;
+  animation: bob 1.2s steps(2) infinite;
+  filter: drop-shadow(4px 4px 0 var(--outline));
+}
+
+.mode-select__bubble {
+  position: relative;
+  max-width: 320px;
+  margin: 0 0 30px;
+  padding: 6px 12px;
+  border: 3px solid var(--outline);
+  background: var(--text);
+  color: var(--accent-ink);
+  font-size: 1.25rem;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.mode-select__bubble::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  bottom: 6px;
+  width: 9px;
+  height: 9px;
+  background: var(--text);
+  border-left: 3px solid var(--outline);
+  border-bottom: 3px solid var(--outline);
+}
+
+.mode-select__title {
+  color: var(--accent);
+  font-size: clamp(1.3rem, 5vw, 2.4rem);
+  text-shadow: 5px 5px 0 var(--outline);
+}
+
+.mode-select__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 300px));
+  gap: 24px;
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 860px) {
+  .mode-select__list {
+    grid-template-columns: minmax(0, 420px);
+    gap: 16px;
+  }
+}
+
+.mode-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 22px 18px 18px;
+  border: var(--border-w) solid var(--outline);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.2rem;
+  box-shadow: var(--shadow);
+  transition:
+    transform 0.1s steps(2),
+    box-shadow 0.1s steps(2);
+}
+
+.mode-card.is-selected {
+  border-color: var(--accent);
+  transform: var(--lift);
+  box-shadow: 8px 8px 0 var(--accent);
+}
+
+.mode-card:focus-visible {
+  outline: none;
+}
+
+.mode-card__slot {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  padding: 2px 10px;
+  background: var(--outline);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+}
+
+.mode-card__name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+
+.mode-card.is-selected .mode-card__name {
+  color: var(--accent);
+}
+
+.mode-card__time {
+  padding: 0 8px;
+  border: 2px solid var(--accent-2);
+  color: var(--accent-2);
+  font-size: 1.05rem;
+  text-transform: uppercase;
+}
+
+.mode-card__blurb {
+  color: var(--text-muted);
+  line-height: 1.15;
+}
+
+.mode-card__start {
+  align-self: end;
+  margin-top: 6px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.mode-card.is-selected .mode-card__start {
+  color: var(--accent);
+  animation: blink 1s steps(1) infinite;
+}
+
+.mode-select__note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+}
+
+.mode-select__keys {
+  padding: 0 6px;
+  border: 2px solid var(--outline);
+  background: var(--text);
+  color: var(--accent-ink);
+}
+
+@media (pointer: coarse) {
+  .mode-select__keyhelp {
+    display: none;
+  }
+}
+
+/* ---------- Mini previews inside the cards ---------- */
+.mode-preview {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 110px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  border: 3px solid var(--outline);
+  background: var(--bg);
+}
+
+.mode-preview i {
+  position: absolute;
+  display: block;
+  font-style: normal;
+}
+
+/* Classic: a small one-page layout */
+.mp-nav {
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 10px;
+  background: var(--bg-alt);
+  border-bottom: 2px solid var(--outline);
+}
+
+.mp-title {
+  top: 20px;
+  left: 12px;
+  width: 45%;
+  height: 10px;
+  background: var(--text);
+}
+
+.mp-line {
+  top: 38px;
+  left: 12px;
+  width: 60%;
+  height: 5px;
+  background: var(--text-muted);
+}
+
+.mp-line--short {
+  top: 48px;
+  width: 40%;
+}
+
+.mp-cards {
+  position: absolute;
+  top: 64px;
+  right: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.mode-preview .mp-cards i {
+  position: static;
+  flex: 1;
+  height: 34px;
+  border: 2px solid var(--outline);
+  background: var(--surface);
+}
+
+.mode-card.is-selected .mp-cards i:nth-child(2) {
+  background: var(--accent);
+}
+
+/* Cinematic: frames that slide up like a scroll */
+.mp-frames {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-auto-rows: 110px;
+}
+
+.mode-card.is-selected .mp-frames {
+  animation: mp-scroll 3.6s steps(24) infinite;
+}
+
+.mode-preview .mp-frames i {
+  position: relative;
+  background:
+    linear-gradient(var(--text) 0 0) 12px 60px / 45% 10px no-repeat,
+    linear-gradient(var(--text-muted) 0 0) 12px 78px / 30% 5px no-repeat;
+}
+
+.mode-preview .mp-frames i:nth-child(1) {
+  background-color: #5d275d;
+}
+
+.mode-preview .mp-frames i:nth-child(2) {
+  background-color: #257179;
+}
+
+.mode-preview .mp-frames i:nth-child(3) {
+  background-color: #b13e53;
+}
+
+@keyframes mp-scroll {
+  0%,
+  20% {
+    transform: translateY(0);
+  }
+
+  35%,
+  55% {
+    transform: translateY(-110px);
+  }
+
+  70%,
+  100% {
+    transform: translateY(-220px);
+  }
+}
+
+.mp-arrow {
+  right: 10px;
+  bottom: 6px;
+  color: var(--accent);
+  font-size: 0.9rem;
+  animation: bob 0.8s steps(2) infinite;
+}
+
+/* Game: the avatar jumping under a ? block */
+.mp-ground {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 16px;
+  border-top: 3px solid #38b764;
+  background: #333c57;
+}
+
+.mp-block {
+  top: 14px;
+  left: calc(50% - 12px);
+  display: grid !important;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--outline);
+  background: var(--accent);
+  color: var(--accent-3);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+}
+
+.mp-hero {
+  position: absolute;
+  bottom: 16px;
+  left: calc(50% - 12px);
+  width: 24px;
+}
+
+.mode-card.is-selected .mp-hero {
+  animation: mp-jump 1.2s steps(6) infinite;
+}
+
+@keyframes mp-jump {
+  0%,
+  40%,
+  100% {
+    transform: translateY(0);
+  }
+
+  60% {
+    transform: translateY(-40px);
+  }
+}
+
+.mp-bug {
+  bottom: 16px;
+  left: 20%;
+  width: 14px;
+  height: 8px;
+  background: var(--green);
+  box-shadow: 0 -3px 0 -1px var(--green);
+  animation: mp-walk 3s steps(12) infinite alternate;
+}
+
+@keyframes mp-walk {
+  to {
+    transform: translateX(40px);
+  }
+}
+
+/* Phones: compact cards so the three modes fit on one screen */
+@media (max-width: 600px) {
+  .mode-select {
+    gap: 14px;
+    padding-bottom: 80px;
+  }
+
+  .mode-card {
+    gap: 4px;
+    padding: 14px 14px 12px;
+  }
+
+  .mode-preview,
+  .mode-card__start {
+    display: none;
+  }
+
+  .mode-card__blurb {
+    font-size: 1.1rem;
+  }
+}
