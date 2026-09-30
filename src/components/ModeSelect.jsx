@@ -4,7 +4,7 @@ import { profile } from '../data/portfolio.js'
 import { sfx } from '../sound.js'
 
 // "Select mode" screen shown on the first visit, so visitors know the
-// portfolio has three versions. ← → / 1-3 to choose, Enter to start.
+// portfolio has several versions. ← → / 1-4 to choose, Enter to start.
 export default function ModeSelect({ variants, initial, onPick }) {
   const [selected, setSelected] = useState(() => Math.max(0, variants.findIndex((v) => v.id === initial)))
   const cards = useRef([])
@@ -109,6 +109,15 @@ function Preview({ id }) {
           <i />
         </span>
         <i className="mp-arrow">▼</i>
+      </span>
+    )
+  }
+  if (id === 'paper') {
+    return (
+      <span className="mode-preview mode-preview--paper" aria-hidden="true">
+        <span className="mp-floor" />
+        <i className="mp-house" />
+        <PixelAvatar className="mp-paper" />
       </span>
     )
   }

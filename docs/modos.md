@@ -3,7 +3,7 @@
 ## Cómo se elige el modo
 
 1. **Primera visita** → pantalla **SELECT MODE** ([`ModeSelect.jsx`](../src/components/ModeSelect.jsx)):
-   tres tarjetas con vista previa animada. Se elige con clic, con `← →` + `Enter`, o con las teclas `1` `2` `3`.
+   cuatro tarjetas con vista previa animada. Se elige con clic, con `← →` + `Enter`, o con las teclas `1` a `4`.
 2. La elección se guarda en `localStorage` (`portfolio-variant`) y se añade a la URL (`?v=…`).
 3. En las siguientes visitas se abre directamente el último modo.
 4. La barra **MODE** (abajo a la izquierda, [`PortfolioSwitcher.jsx`](../src/components/PortfolioSwitcher.jsx))
@@ -126,6 +126,35 @@ un **minimapa** con la posición del jugador y las secciones ya abiertas (en ama
 
 La pantalla de inicio ofrece **☰ Skip to menu**, y el **menú rápido** (`M`) teletransporta a cualquier
 sección y la abre directamente, sin necesidad de jugar.
+
+---
+
+## 4. Paper 3D: *Paper Quest*
+
+Mundo 3D tipo diorama con personajes y objetos de **papel** pixel art, al estilo *Paper Mario*.
+Carpeta: [`src/variants/paper/`](../src/variants/paper/). Necesita WebGL; si el navegador no lo tiene, la pantalla de
+inicio lo avisa y sugiere otro modo.
+
+### Controles
+
+| Acción | Teclado | Móvil |
+|---|---|---|
+| Caminar (también hacia el fondo y hacia delante) | `← ↑ → ↓` o `WASD` | Cruceta ▲ ◀ ▶ ▼ |
+| Saltar (mantener = más alto) | `Espacio`, `Z` o `K` | **A** |
+| Abrir lo que tienes detrás | `E`, `Enter` o `X` | **B** |
+| Cerrar ventana | `Esc`, `E` o `B` | ✕ |
+| Menú rápido | `M` | ☰ Menu |
+
+### El mundo (de izquierda a derecha)
+
+Las mismas secciones que el modo Game: cartel **START**, casa **PROFILE**, banderas del **Journey**, terminal
+**BUG REPORT** (con el bug crítico), **ARCADE** con una máquina por juego (su pantalla muestra la portada pixelada),
+bloques **?** de **SKILLS**, taller **DEV & 3D**, mástil de meta y castillo **CONTACT**.
+
+- Al acercarte, los carteles muestran un bocadillo y los recortes se **despliegan** del suelo como un libro pop-up.
+- La casa, el taller y el castillo **abren su fachada** como una puerta antes de mostrar la ventana.
+- El personaje **gira como una hoja** al cambiar de dirección; los bichos pisados quedan planos como papel.
+- Mismos logros, HUD, minimapa y menú rápido que el modo Game.
 
 ---
 

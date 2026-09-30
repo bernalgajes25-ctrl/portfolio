@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { sfx } from '../sound.js'
 
-// Always-visible bar (bottom-left) with the three portfolio modes.
+// Always-visible bar (bottom-left) with the portfolio modes.
 // `highlight` shows a short hint right after the visitor picks a mode.
 export default function PortfolioSwitcher({ variants, current, onChange, highlight }) {
   const [hint, setHint] = useState(false)

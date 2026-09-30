@@ -10,7 +10,8 @@ index.html
             └─ modo elegido + PortfolioSwitcher (barra MODE)
                  ├─ App.jsx                                 Classic
                  ├─ variants/scroll/ScrollPortfolio.jsx     Cinematic
-                 └─ variants/game/GamePortfolio.jsx         Game
+                 ├─ variants/game/GamePortfolio.jsx         Game
+                 └─ variants/paper/PaperPortfolio.jsx       Paper 3D (carga diferida con React.lazy)
 ```
 
 `Root` solo monta **un** modo a la vez. Al cambiar, el anterior se desmonta y limpia sus bucles de animación,
@@ -53,11 +54,15 @@ src/
 │   ├── scroll/
 │   │   ├── Scene.jsx           motor de escenas: Scene, Reveal, useScrollTicker
 │   │   └── ScrollPortfolio.jsx capítulos del modo Cinematic
-│   └── game/
-│       ├── level.js            diseño del nivel, zonas y paleta
-│       ├── engine.js           física, colisiones, enemigos y dibujo en canvas
-│       ├── GamePortfolio.jsx   React: pantalla de inicio, HUD, menú, controles táctiles
-│       └── GamePanel.jsx       ventanas con el contenido de cada sección
+│   ├── game/
+│   │   ├── level.js            diseño del nivel, zonas y paleta
+│   │   ├── engine.js           física, colisiones, enemigos y dibujo en canvas
+│   │   ├── GamePortfolio.jsx   React: pantalla de inicio, HUD, menú, controles táctiles
+│   │   └── GamePanel.jsx       ventanas con el contenido de cada sección (también las usa Paper 3D)
+│   └── paper/
+│       ├── art.js              pixel art dibujado por código → texturas (recortes con borde de papel, fuente 3×5)
+│       ├── engine.js           mundo three.js: diorama, física, bichos, cámara y animaciones de papel
+│       └── PaperPortfolio.jsx  React: pantalla de inicio, HUD, menú, cruceta táctil
 ├── sound.js                    efectos de sonido
 ├── sprites.js                  sprites de bichos/nave + drawSprite()
 ├── assets/                     cursores pixel (SVG)
@@ -66,11 +71,12 @@ src/
     ├── global.css              base + todo el modo Classic
     ├── switcher.css            barra MODE + pantalla SELECT MODE
     ├── scroll.css              modo Cinematic (clases cine-*)
-    └── game.css                modo Game (clases game-*)
+    ├── game.css                modo Game (clases game-*)
+    └── paper.css               modo Paper 3D (clases paper-*, reutiliza las game-*)
 ```
 
 Cada modo usa su propio prefijo de clases CSS (`cine-`, `game-`, `mode-`, `switcher`) para no pisar los
-estilos del Classic. Los tres reutilizan las piezas base de `global.css` (`.btn`, `.panel`, `.tag`, `.window`…).
+estilos del Classic. Todos reutilizan las piezas base de `global.css` (`.btn`, `.panel`, `.tag`, `.window`…).
 
 ---
 
@@ -164,6 +170,48 @@ El contenido de cada ventana está en [`GamePanel.jsx`](../src/variants/game/Gam
 
 **Añadir un objeto nuevo:** meterlo en `objects` dentro de `buildLevel()`, escribir su función `drawX()` en `engine.js`,
 registrarla en el objeto `DRAW` y, si abre una ventana nueva, añadir el caso en `GamePanel.jsx` y la zona en `ZONES`.
+
+---
+
+## Motor del modo Paper 3D
+
+Archivos: [`src/variants/paper/`](../src/variants/paper/). Usa **three.js**; `Root.jsx` lo importa con `React.lazy`,
+así que los otros modos no descargan la librería.
+
+### Idea
+
+- El mundo es 3D (suelo, bloques **?**, río, colinas), pero **todo lo demás son planos**: el avatar, los bichos, las casas,
+  los árboles… Cada uno es una textura pixel art dibujada por código en [`art.js`](../src/variants/paper/art.js) con
+  `cutout()`, que añade el borde blanco de "recorte de papel". Filtro `NearestFilter` para que se vea nítido.
+- La escena se renderiza a baja resolución (1/2–1/3 del tamaño) y el CSS la escala con `image-rendering: pixelated`.
+- Sombras duras (`BasicShadowMap`) que respetan la silueta de los recortes, más una sombra redonda bajo cada personaje
+  y bajo cada bloque **?** (para saber dónde saltar).
+
+### Efectos de papel
+
+| Efecto | Cómo |
+|---|---|
+| Giro al cambiar de dirección | El plano rota 180° en Y (a mitad de giro se ve de canto). |
+| Mundo "pop-up" | Cada recorte empieza tumbado (`rotation.x = -90°`) y se levanta con rebote al acercarse el jugador (`POP_AHEAD`). |
+| Puertas | Casa, taller y castillo tienen la fachada con bisagra a la izquierda: al pulsar **E** se abre y enseña el interior (dibujado con `inside = true`). |
+| Bichos aplastados | Al pisarlos se aplanan como una hoja y sueltan confeti. |
+
+### API
+
+`createPaperGame(canvas, overlay, callbacks)` devuelve la misma API que el motor 2D (`press`, `setPaused`, `warp`,
+`progress`, `zones`, `destroy`) y usa los mismos callbacks y ventanas (`GamePanel.jsx`). Además acepta las acciones
+`up` / `down` para moverse en profundidad. En `overlay` (un div encima del canvas) el motor coloca los textos HTML que
+siguen a objetos 3D: la tecla **E**, los bocadillos de los carteles y los "FIXED!".
+
+Como los objetos están más al fondo que el jugador, "qué tengo delante" se calcula con la perspectiva (dónde se ve
+el objeto en pantalla), no con su `x` real.
+
+### Diseño del nivel
+
+`buildLayout()` en `engine.js` coloca los objetos a lo largo del eje X con un cursor `x`, igual que el modo Game.
+Tipos: `sign`, `house`, `flag`, `terminal`, `cabinet`, `workshop`, `pole`, `castle`; bloques y bichos aparte.
+Para un objeto nuevo: añadirlo en `buildLayout()`, dibujar su arte en `art.js` y crear su malla en el bucle
+`for (const o of objects)` de `createPaperGame`.
 
 ---
 

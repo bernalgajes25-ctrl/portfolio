@@ -20,7 +20,7 @@ function panelTitle(panel) {
     case 'about':
       return 'PROFILE.SAV'
     case 'journey':
-      return `LEVEL ${journey[index].level}`
+      return index == null ? 'WORLD MAP' : `LEVEL ${journey[index].level}`
     case 'locked':
       return 'LEVEL ???'
     case 'report':
@@ -59,7 +59,8 @@ export default function GamePanel({ panel, onClose, onNavigate, foundSkills, goa
         </header>
         <div className="window__body game-modal__body">
           {zone === 'about' && <About />}
-          {zone === 'journey' && <Level level={journey[index]} />}
+          {zone === 'journey' && rawIndex == null && <WorldMap />}
+          {zone === 'journey' && rawIndex != null && <Level level={journey[index]} />}
           {zone === 'locked' && <Locked />}
           {zone === 'report' && <Report />}
           {zone === 'game' && <Game index={index} onNavigate={onNavigate} />}
@@ -139,6 +140,17 @@ function Level({ level: l }) {
       <p className="map__place">{l.place}</p>
       {l.description && !l.description.startsWith('TODO') && <p className="map__desc">{l.description}</p>}
       {l.current && <span className="map__current">▶ In progress</span>}
+    </div>
+  )
+}
+
+// The quick menu opens "journey" without a level: show them all
+function WorldMap() {
+  return (
+    <div className="game-worldmap">
+      {journey.map((l) => (
+        <Level key={l.level} level={l} />
+      ))}
     </div>
   )
 }

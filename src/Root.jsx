@@ -1,11 +1,14 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import App from './App.jsx'
 import ScrollPortfolio from './variants/scroll/ScrollPortfolio.jsx'
 import GamePortfolio from './variants/game/GamePortfolio.jsx'
 import PortfolioSwitcher from './components/PortfolioSwitcher.jsx'
 import ModeSelect from './components/ModeSelect.jsx'
 
-// The three versions of the portfolio. "classic" is the original site.
+// three.js is big: only download it when the 3D mode is opened
+const PaperPortfolio = lazy(() => import('./variants/paper/PaperPortfolio.jsx'))
+
+// The four versions of the portfolio. "classic" is the original site.
 export const VARIANTS = [
   {
     id: 'classic',
@@ -30,6 +33,14 @@ export const VARIANTS = [
     time: 'Play · 5 min',
     hint: 'Play the portfolio as a platformer',
     blurb: 'A tiny platformer: walk, jump, squash bugs and open each section in the level.',
+  },
+  {
+    id: 'paper',
+    label: 'Paper 3D',
+    icon: '◆',
+    time: 'Explore · 5 min',
+    hint: 'A 3D world with paper cut-out characters',
+    blurb: 'A 3D paper-craft diorama: walk around, flip like a sticker and open doors to each section.',
   },
 ]
 
@@ -82,6 +93,11 @@ export default function Root() {
       {variant === 'classic' && <App />}
       {variant === 'scroll' && <ScrollPortfolio />}
       {variant === 'game' && <GamePortfolio />}
+      {variant === 'paper' && (
+        <Suspense fallback={<p className="mode-loading">Unfolding the paper world…</p>}>
+          <PaperPortfolio />
+        </Suspense>
+      )}
       <PortfolioSwitcher variants={VARIANTS} current={variant} onChange={change} highlight={justChose} />
     </>
   )

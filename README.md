@@ -3,14 +3,16 @@
 Portfolio personal de **Game QA Tester** y estudiante de **Desarrollo de Aplicaciones Multiplataforma (DAM)**.
 Hecho con **React 19 + Vite**, con estética pixel art (paleta *Sweetie 16*) y sin librerías externas de
 animación, juegos ni UI: todo el movimiento, los minijuegos y los sonidos están programados a mano.
+La única excepción es **three.js**, que solo usa el modo Paper 3D (y solo se descarga al abrirlo).
 
-El portfolio tiene **tres modos** con el mismo contenido:
+El portfolio tiene **cuatro modos** con el mismo contenido:
 
 | Modo | Qué es | Pensado para |
 |---|---|---|
 | **Classic** | Web de una sola página con todas las secciones, minijuego *Bug Invaders*, mapa del viaje y easter eggs. | Quien quiere leerlo rápido (≈ 2 min). |
 | **Cinematic** | Escenas que se animan al hacer scroll, al estilo de la web de GTA VI. | Una presentación más espectacular (≈ 4 min). |
 | **Game** | *QA Quest*: un plataformas donde cada sección del portfolio es un lugar del nivel. | Jugar y explorar (≈ 5 min). |
+| **Paper 3D** | *Paper Quest*: un mundo 3D tipo diorama donde personajes, edificios y objetos son recortes de papel pixel art (estilo *Paper Mario*). | Explorar en 3D (≈ 5 min). |
 
 La primera vez que alguien entra ve la pantalla **SELECT MODE** para elegir. Después puede cambiar
 en cualquier momento con la barra **MODE** de abajo a la izquierda.
@@ -41,7 +43,7 @@ Enlaces útiles en local:
 ## Cambiar el contenido
 
 **Todo el texto, los juegos, la experiencia, las skills y los enlaces están en un único archivo:**
-[`src/data/portfolio.js`](src/data/portfolio.js). Al editarlo se actualizan los tres modos a la vez.
+[`src/data/portfolio.js`](src/data/portfolio.js). Al editarlo se actualizan los cuatro modos a la vez.
 
 Guía completa campo por campo → [docs/contenido.md](docs/contenido.md).
 
@@ -81,11 +83,12 @@ Portfolio/
     ├── variants/
     │   ├── shared.jsx      # avatar pixel y botón de sonido compartidos
     │   ├── scroll/         # modo Cinematic
-    │   └── game/           # modo Game (motor de plataformas en <canvas>)
+    │   ├── game/           # modo Game (motor de plataformas en <canvas>)
+    │   └── paper/          # modo Paper 3D (diorama three.js con recortes de papel)
     ├── sound.js            # efectos 8-bit generados con Web Audio (sin archivos de audio)
     ├── sprites.js          # sprites de bichos y nave
     ├── assets/             # cursores pixel
-    └── styles/             # theme, global (Classic), switcher, scroll, game
+    └── styles/             # theme, global (Classic), switcher, scroll, game, paper
 ```
 
 ---
@@ -106,5 +109,6 @@ Portfolio/
 - **Vite 8** (desarrollo y build).
 - **CSS puro** con variables (`theme.css`) y animaciones por pasos (`steps()`) para el efecto pixel.
 - **Canvas 2D** para *Bug Invaders*, los bichos del fondo y el modo Game.
+- **three.js (WebGL)** para el mundo 3D del modo Paper 3D.
 - **SVG** para el avatar y el mapa de la trayectoria.
 - **Web Audio API** para todos los sonidos.
