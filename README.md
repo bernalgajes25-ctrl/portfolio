@@ -96,16 +96,6 @@ Portfolio/
 
 ---
 
-## Publicar
-
-`npm run build` genera la carpeta `dist/`, que es una web estática. Opciones:
-
-- **Netlify / Vercel**: arrastrar la carpeta `dist/` o conectar el repositorio (comando `npm run build`, carpeta `dist`).
-- **GitHub Pages**: subir el contenido de `dist/`. `vite.config.js` ya usa `base: './'`, así que funciona
-  también dentro de una subcarpeta (`usuario.github.io/portfolio/`).
-
----
-
 ## Tecnologías
 
 - **React 19** (componentes y hooks, sin librerías de estado).

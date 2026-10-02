@@ -223,4 +223,3 @@ eso supone:
 |---|---|
 | Node.js + npm | Ejecutar Vite e instalar paquetes. |
 | Git + GitHub | Historial de cambios y copia del proyecto. |
-| Netlify / Vercel / GitHub Pages | Opciones de publicación (ver el [README](../README.md#publicar)). |
