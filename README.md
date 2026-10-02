@@ -64,6 +64,9 @@ Resumen rápido:
 | [docs/contenido.md](docs/contenido.md) | Cómo editar textos, juegos, trayectoria, skills, imágenes y enlaces. |
 | [docs/modos.md](docs/modos.md) | Qué hace cada modo, sus secciones, controles y easter eggs. |
 | [docs/arquitectura.md](docs/arquitectura.md) | Estructura del código, cómo funciona cada motor (scroll, juego, sonido) y cómo ampliarlo. |
+| [docs/animaciones.md](docs/animaciones.md) | Las cuatro técnicas de animación, catálogo de efectos y cómo añadir uno nuevo. |
+| [docs/diseno.md](docs/diseno.md) | Guía de estilo: colores, tipografía, componentes base y ejemplos de uso. |
+| [docs/tecnologias.md](docs/tecnologias.md) | Qué tecnologías se han usado y por qué (y cuáles se han descartado). |
 
 ---
 

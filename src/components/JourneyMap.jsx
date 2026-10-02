@@ -3,13 +3,28 @@ import { avatar } from '../data/portfolio.js'
 import { sfx } from '../sound.js'
 
 // Super Mario World style overworld map for the "My journey" section.
-// Drawn as an SVG in a small logical resolution (320x120) that CSS
-// scales up, so every unit is a chunky pixel.
+// Drawn as an SVG in a small logical resolution (320x120, or 160x260 in
+// portrait on phones) that CSS scales up, so every unit is a chunky pixel.
 
-const W = 320
-const H = 120
-const WATER_Y = 106
 const WALK_SPEED = 70 // map pixels per second
+const PORTRAIT_QUERY = '(max-width: 640px)'
+
+// Map size and hills for each orientation
+const SIZES = {
+  landscape: { w: 320, h: 120, hills: [{ x: 112, w: 30 }, { x: 150, w: 20 }, { x: 236, w: 34 }] },
+  portrait: { w: 160, h: 260, hills: [{ x: 6, w: 30 }, { x: 70, w: 20 }] },
+}
+
+function usePortrait() {
+  const [portrait, setPortrait] = useState(() => window.matchMedia(PORTRAIT_QUERY).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(PORTRAIT_QUERY)
+    const onChange = () => setPortrait(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  return portrait
+}
 
 const C = {
   outline: '#0d0e18',
@@ -73,17 +88,28 @@ function seeded(seed) {
 
 // Node positions zig-zag across the map; the route between two nodes is an
 // L-shaped path (horizontal, vertical, horizontal) like a classic overworld.
-function buildLayout(count) {
-  const nodes = Array.from({ length: count }, (_, i) => ({
-    x: Math.round(34 + (i * (W - 68)) / Math.max(count - 1, 1)),
-    y: i % 2 === 0 ? 76 : 46,
-  }))
+// In portrait the map is rotated: nodes zig-zag downwards and the L-shaped
+// path goes vertical, horizontal, vertical.
+function buildLayout(count, portrait) {
+  const { w: W, h: H, hills } = SIZES[portrait ? 'portrait' : 'landscape']
+  const waterY = H - 14
+  const steps = Math.max(count - 1, 1)
+  const nodes = Array.from({ length: count }, (_, i) =>
+    portrait
+      ? { x: i % 2 === 0 ? 44 : 112, y: Math.round(46 + (i * (waterY - 26 - 46)) / steps) }
+      : { x: Math.round(34 + (i * (W - 68)) / steps), y: i % 2 === 0 ? 76 : 46 },
+  )
   const route = [nodes[0]]
   for (let i = 1; i < nodes.length; i++) {
     const a = nodes[i - 1]
     const b = nodes[i]
-    const mid = Math.round((a.x + b.x) / 2)
-    route.push({ x: mid, y: a.y }, { x: mid, y: b.y }, b)
+    if (portrait) {
+      const mid = Math.round((a.y + b.y) / 2)
+      route.push({ x: a.x, y: mid }, { x: b.x, y: mid }, b)
+    } else {
+      const mid = Math.round((a.x + b.x) / 2)
+      route.push({ x: mid, y: a.y }, { x: mid, y: b.y }, b)
+    }
   }
   // dots every 5 map pixels along the route
   const dots = []
@@ -95,16 +121,16 @@ function buildLayout(count) {
       dots.push({ x: a.x + ((b.x - a.x) * d) / len, y: a.y + ((b.y - a.y) * d) / len })
     }
   }
-  return { nodes, route, dots }
+  return { W, H, waterY, hills, nodes, route, dots }
 }
 
-function buildDecorations({ nodes, dots }) {
+function buildDecorations({ W, waterY, nodes, dots }) {
   const rand = seeded(7)
   const items = []
   const clear = (x, y, r) =>
     dots.every((d) => Math.hypot(d.x - x, d.y - y) > r) && nodes.every((n) => Math.hypot(n.x - x, n.y - y) > 22)
 
-  for (let y = 26; y < WATER_Y - 10; y += 11) {
+  for (let y = 26; y < waterY - 10; y += 11) {
     for (let x = 4; x < W - 10; x += 12) {
       const jx = x + Math.floor(rand() * 6)
       const jy = y + Math.floor(rand() * 4)
@@ -133,21 +159,40 @@ function Hill({ x, w }) {
 
 export default function JourneyMap({ steps, selected, onSelect }) {
   const count = steps.length + 1 // + locked "next level"
-  const layout = useMemo(() => buildLayout(count), [count])
+  const portrait = usePortrait()
+  const layout = useMemo(() => buildLayout(count, portrait), [count, portrait])
   const decorations = useMemo(() => buildDecorations(layout), [layout])
+  const { W, H, waterY } = layout
 
   const [pos, setPos] = useState(layout.nodes[selected])
   const [walking, setWalking] = useState(false)
   const [step, setStep] = useState(0) // walk animation frame
-  const current = useRef(selected)
+  const current = useRef(selected) // node the player stands on (or is walking to)
+  const pending = useRef(null) // target requested while the player was still walking
+  const busy = useRef(false)
   const raf = useRef()
+  const mapRef = useRef()
+
+  // When the orientation changes, snap the player onto its node in the new layout
+  useEffect(() => {
+    cancelAnimationFrame(raf.current)
+    busy.current = false
+    pending.current = null
+    setWalking(false)
+    setPos(layout.nodes[current.current])
+  }, [layout])
 
   const playerColors = { O: C.outline, H: avatar.hair, P: avatar.headset, S: avatar.skin, E: C.outline, T: avatar.shirt }
 
   const walkTo = useCallback(
     (target) => {
-      if (target === current.current || target < 0 || target >= count) return
-      cancelAnimationFrame(raf.current)
+      if (target < 0 || target >= count) return
+      // Don't cut a walk in half: remember the last request and go there next
+      if (busy.current) {
+        pending.current = target
+        return
+      }
+      if (target === current.current) return
       const from = current.current
       // waypoints along the route between the two nodes (3 route points per node)
       let points = layout.route.slice(Math.min(from, target) * 3, Math.max(from, target) * 3 + 1)
@@ -160,6 +205,7 @@ export default function JourneyMap({ steps, selected, onSelect }) {
         return
       }
 
+      busy.current = true
       setWalking(true)
       let seg = 1
       let p = { ...points[0] }
@@ -190,27 +236,46 @@ export default function JourneyMap({ steps, selected, onSelect }) {
         if (seg < points.length) {
           raf.current = requestAnimationFrame(tick)
         } else {
+          busy.current = false
           setWalking(false)
           sfx.select()
           onSelect(target)
+          const next = pending.current
+          pending.current = null
+          if (next !== null && next !== target) walkToRef.current(next)
         }
       }
       raf.current = requestAnimationFrame(tick)
     },
     [count, layout, onSelect],
   )
+  const walkToRef = useRef(walkTo)
+  walkToRef.current = walkTo
 
   useEffect(() => () => cancelAnimationFrame(raf.current), [])
+
+  // While walking, arrows chain from the node the player is heading to
+  const base = () => pending.current ?? current.current
 
   const onKeyDown = (e) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault()
-      walkTo(current.current + 1)
+      walkTo(base() + 1)
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
       e.preventDefault()
-      walkTo(current.current - 1)
+      walkTo(base() - 1)
+    } else if (e.key === 'Home') {
+      e.preventDefault()
+      walkTo(0)
+    } else if (e.key === 'End') {
+      e.preventDefault()
+      walkTo(count - 1)
     }
   }
+
+  // Clicking anywhere on the map gives it keyboard focus, so the arrows
+  // work right away (SVG elements don't take focus reliably on click)
+  const focusMap = () => mapRef.current?.focus({ preventScroll: true })
 
   // Everything that never changes is built once
   const scenery = useMemo(
@@ -229,11 +294,11 @@ export default function JourneyMap({ steps, selected, onSelect }) {
           </pattern>
         </defs>
         <rect width={W} height={H} fill="url(#jm-grass)" />
-        <Hill x={112} w={30} />
-        <Hill x={150} w={20} />
-        <Hill x={236} w={34} />
-        <rect y={WATER_Y - 2} width={W} height="2" fill={C.path} />
-        <rect y={WATER_Y} width={W} height={H - WATER_Y} fill="url(#jm-water)" />
+        {layout.hills.map((h) => (
+          <Hill key={h.x} x={h.x} w={h.w} />
+        ))}
+        <rect y={waterY - 2} width={W} height="2" fill={C.path} />
+        <rect y={waterY} width={W} height={H - waterY} fill="url(#jm-water)" />
 
         {/* route: dark border, sand path, then dots */}
         <polyline
@@ -266,7 +331,7 @@ export default function JourneyMap({ steps, selected, onSelect }) {
         ))}
       </g>
     ),
-    [layout, decorations],
+    [layout, decorations, W, H, waterY],
   )
 
   const bannerIndex = selected
@@ -289,16 +354,16 @@ export default function JourneyMap({ steps, selected, onSelect }) {
           </>
         )}
       </div>
-      <div className="world-map__scroll">
-        <svg
-          className="world-map__svg"
-          viewBox={`0 0 ${W} ${H}`}
-          shapeRendering="crispEdges"
-          tabIndex={0}
-          role="group"
-          aria-label="Journey map. Use the arrow keys or click a level to walk there."
-          onKeyDown={onKeyDown}
-        >
+      <div
+        ref={mapRef}
+        className={`world-map__frame ${portrait ? 'is-portrait' : ''}`}
+        tabIndex={0}
+        role="group"
+        aria-label="Journey map. Use the arrow keys or click a level to walk there."
+        onKeyDown={onKeyDown}
+        onPointerDown={focusMap}
+      >
+        <svg className="world-map__svg" viewBox={`0 0 ${W} ${H}`} shapeRendering="crispEdges">
           {scenery}
 
           {layout.nodes.map((n, i) => {
@@ -345,7 +410,9 @@ export default function JourneyMap({ steps, selected, onSelect }) {
           </g>
         </svg>
       </div>
-      <p className="world-map__hint">Click a level or use ← → to walk the map.</p>
+      <p className="world-map__hint">
+        {portrait ? 'Tap a level to walk there.' : 'Click a level or use the arrow keys to walk the map.'}
+      </p>
     </div>
   )
 }

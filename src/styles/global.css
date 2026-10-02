@@ -692,22 +692,27 @@ ol {
   margin-bottom: 56px;
 }
 
-.world-map__scroll {
-  overflow-x: auto;
+.world-map__frame {
   border: var(--border-w) solid var(--outline);
   box-shadow: var(--shadow);
+  outline: none;
+}
+
+.world-map__frame:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .world-map__svg {
   display: block;
   width: 100%;
-  min-width: 720px; /* on phones the map scrolls sideways instead of shrinking */
-  outline: none;
+  height: auto;
 }
 
-.world-map__svg:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: -3px;
+/* Phones: the map is drawn vertically, so it fits the width without cropping */
+.world-map__frame.is-portrait {
+  max-width: 360px;
+  margin-inline: auto;
 }
 
 .world-map__banner {
@@ -727,6 +732,16 @@ ol {
   font-size: 1.15rem;
   line-height: 1.1;
   pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  /* no room to float the banner over the map, so it sits above it */
+  .world-map__banner {
+    position: static;
+    max-width: none;
+    margin-bottom: 12px;
+    font-size: 1rem;
+  }
 }
 
 .world-map__level {
